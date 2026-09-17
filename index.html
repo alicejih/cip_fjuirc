@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>大會報到管理 - 原資增能獎勵報到系統</title>
+  
+  <style>
+    * { 
+      box-sizing: border-box; 
+      -webkit-font-smoothing: antialiased; 
+      -moz-osx-font-smoothing: grayscale;
+    }
+    
+    body, html { 
+      margin: 0; 
+      padding: 0; 
+      min-height: 100vh; 
+      font-family: "Microsoft JhengHei", "PingFang TC", sans-serif; 
+      display: flex; 
+      flex-direction: column; 
+      align-items: center; 
+      overflow-x: hidden;
+    }
+    
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: url('https://irc.fju.edu.tw/resources/20260601125036407.jpg'); 
+      background-size: 100% auto; 
+      background-position: center;
+      background-repeat: no-repeat;
+      filter: blur(6px); 
+      opacity: 0.25;     
+      z-index: -1;
+    }
+
+    #apiSettingBanner {
+      background: rgba(204, 17, 17, 0.95);
+      color: #fff;
+      padding: 8px 16px;
+      font-size: 13px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      position: sticky;
+      top: 0;
+      z-index: 10000;
+      width: 100%;
+    }
+    #apiSettingBanner button {
+      color: #ffe082;
+      font-weight: bold;
+      text-decoration: underline;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 13px;
+      width: auto;
+      padding: 0;
+      margin: 0;
+      box-shadow: none;
+      letter-spacing: normal;
+    }
+    
+    /* 簡化後的導覽列：僅報到與看板 */
+    .nav-bar { 
+      display: flex; 
+      gap: 16px; 
+      width: 95%; 
+      max-width: 650px; 
+      margin-top: 30px; 
+      z-index: 10; 
+      flex-shrink: 0;
+    }
+    .nav-btn { 
+      flex: 1; 
+      padding: 22px 16px; 
+      background: rgba(240, 240, 240, 0.85); 
+      backdrop-filter: blur(5px);
+      -webkit-backdrop-filter: blur(5px);
+      color: #444444; 
+      border: 2px solid #dddddd; 
+      border-radius: 20px; 
+      text-decoration: none; 
+      text-align: center; 
+      font-weight: bold; 
+      font-size: 22px; 
+      transition: all 0.2s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.08);
+    }
+    .nav-btn:hover {
+      background: #e5e5e5;
+      color: #222222;
+    }
+    .nav-btn.active { 
+      background: #cc1111; 
+      color: #ffffff;      
+      border-color: #cc1111;
+      box-shadow: 0 8px 25px rgba(204, 17, 17, 0.4);
+    }
+
+    .card { 
+      background: rgba(255, 255, 255, 0.92); 
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      padding: 45px 35px; 
+      border-radius: 36px; 
+      box-shadow: 0 25px 50px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06); 
+      width: 95%; 
+      max-width: 620px; 
+      text-align: center; 
+      margin: 35px 0 60px 0;
+      border: 1px solid rgba(0, 0, 0, 0.08); 
+      overflow: hidden; 
+    }
+    
+    h2 {
+      color: #222222; 
+      font-weight: bold;
+      font-size: 32px; 
+      margin-bottom: 20px;
+    }
+    
+    input { 
+      width: 100%; 
+      padding: 20px; 
+      margin: 14px 0; 
+      border: 2px solid #e0e0e0; 
+      border-radius: 18px; 
+      font-size: 22px; 
+      text-align: center; 
+      transition: all 0.2s;
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #222222; 
+      text-transform: uppercase;
+    }
+    input:focus {
+      border-color: #cc1111; 
+      background-color: #ffffff;
+      box-shadow: 0 0 0 5px rgba(204, 17, 17, 0.15);
+      outline: none;
+    }
+    
+    button { 
+      width: 100%; 
+      padding: 28px; 
+      background: #cc1111; 
+      color: #ffffff;      
+      border: none; 
+      border-radius: 22px; 
+      font-weight: bold; 
+      font-size: 30px; 
+      cursor: pointer; 
+      transition: all 0.2s; 
+      box-shadow: 0 8px 20px rgba(204, 17, 17, 0.3);
+      margin-top: 20px;
+      letter-spacing: 2px; 
+    }
+    button:hover {
+      background: #b30e0e; 
+      box-shadow: 0 10px 25px rgba(204, 17, 17, 0.4);
+      transform: translateY(-2px); 
+    }
+
+    /* 報到成功卡片資訊排版 */
+    .info-badge {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: bold;
+      margin: 6px 4px;
+    }
+    .badge-travel-yes {
+      background-color: #e6f4ea;
+      color: #137333;
+      border: 1px solid #34a853;
+    }
+    .badge-travel-no {
+      background-color: #f1f3f4;
+      color: #5f6368;
+      border: 1px solid #dadce0;
+    }
+    .badge-reward {
+      background-color: #fef7e0;
+      color: #b06000;
+      border: 1px solid #f9ab00;
+    }
+  </style>
+</head>
+<body onclick="focusInput();">
+
+  <div id="apiSettingBanner">
+    🔗 系統連線狀態：<span id="apiStatusText">尚未設定 GAS API 網址（目前為離線展示模式）</span>
+    <button onclick="promptApiUrl()">[點此設定 API 網址]</button>
+  </div>
+
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn active">報到頁面</a>
+    <a href="query.html" class="nav-btn">查詢看板</a>
+  </div>
+
+  <div style="flex:1; display:flex; align-items:center; width:100%; justify-content:center; padding-bottom: 50px;">
+    <div class="card">
+      <h2 style="margin-top:0;">大會報到管理</h2>
+      <div id="inputGroup">
+        <input type="text" id="scannerInput" autofocus placeholder="請掃描或輸入身分證字號">
+        <button onclick="doScan()">確認報到</button>
+      </div>
+      <div id="loading" style="display:none; color:#cc1111; margin:25px; font-weight:bold; font-size: 26px;">處理中，請稍候...</div>
+      
+      <div id="resCard" style="display:none; margin-top:20px; border-top:2px solid #eee; padding-top:20px;">
+        <div id="resIcon" style="font-size:60px;"></div>
+        <h2 id="resTitle" style="margin:5px 0;"></h2>
+        
+        <!-- 顯示 組別 -->
+        <div id="resGroup" style="font-size: 3.5rem; font-weight: 900; color: #cc1111; margin: 10px 0; letter-spacing: 2px; line-height: 1.1;"></div>
+        
+        <!-- 顯示 編號與姓名 -->
+        <div id="resNameAndId" style="font-size: 2.2rem; font-weight: 800; color: #1a73e8; margin: 12px 0;"></div>
+
+        <!-- 獎勵項目與交通費標籤 -->
+        <div id="resBadges" style="margin: 15px 0;">
+          <span id="resRewardBadge" class="info-badge badge-reward"></span>
+          <span id="resTravelBadge" class="info-badge"></span>
+        </div>
+        
+        <p style="font-size:14px; color:#888; margin-top:18px;">(4秒後自動清空，可直接連續掃碼)</p>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    let API_URL = localStorage.getItem("CIP_GAS_URL") || "";
+
+    function promptApiUrl() {
+      const input = prompt("請貼上您的 Google Apps Script Web App URL：", API_URL);
+      if (input !== null) {
+        API_URL = input.trim();
+        localStorage.setItem("CIP_GAS_URL", API_URL);
+        updateApiStatus();
+      }
+    }
+
+    function updateApiStatus() {
+      const statusText = document.getElementById("apiStatusText");
+      if (API_URL && API_URL.startsWith("http")) {
+        statusText.textContent = "已連線正式 API (" + API_URL.substring(0, 32) + "...)";
+        statusText.style.color = "#a7f3d0";
+      } else {
+        statusText.textContent = "尚未設定 GAS API 網址（目前為展示模擬模式）";
+        statusText.style.color = "#ffe082";
+      }
+    }
+    updateApiStatus();
+
+    async function callGasApi(action, payload = {}) {
+      if (!API_URL) {
+        return mockScanResponse(payload.idNumber);
+      }
+      const res = await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify({ action: action, ...payload })
+      });
+      return await res.json();
+    }
+
+    // 離線模擬資料
+    function mockScanResponse(id) {
+      return new Promise(resolve => {
+        setTimeout(() => {
+          if (id && id.length >= 6) {
+            resolve({
+              status: "success",
+              idNo: "001",
+              groupName: "第一組",
+              name: "測試學員",
+              reward: "語文競賽特優",
+              isTravelPay: "是"
+            });
+          } else {
+            resolve({ status: "not_found" });
+          }
+        }, 500);
+      });
+    }
+
+    const input = document.getElementById('scannerInput');
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') doScan(); });
+    
+    function focusInput() {
+      input.focus();
+    }
+
+    async function doScan() {
+      const id = input.value.trim().toUpperCase(); 
+      if (!id) return;
+      document.getElementById('inputGroup').style.display = 'none';
+      document.getElementById('loading').style.display = 'block';
+      
+      try {
+        const res = await callGasApi("processScan", { idNumber: id });
+        document.getElementById('loading').style.display = 'none';
+        const card = document.getElementById('resCard'); 
+        card.style.display = 'block';
+        input.value = "";
+        
+        if (res.status === "success" || res.status === "already") {
+          if (res.status === "success") {
+            document.getElementById('resIcon').innerText = "✅";
+            document.getElementById('resTitle').innerText = "報到成功";
+            document.getElementById('resTitle').style.color = "#2e7d32";
+          } else {
+            document.getElementById('resIcon').innerText = "⚠️";
+            document.getElementById('resTitle').innerText = "重複報到";
+            document.getElementById('resTitle').style.color = "#e65100";
+          }
+          
+          // 組別 (Col B)
+          document.getElementById('resGroup').style.display = 'block';
+          document.getElementById('resGroup').innerText = res.groupName ? ("組別：" + res.groupName) : "無組別";
+          
+          // 編號 (Col A) 與 姓名 (Col D)
+          document.getElementById('resNameAndId').style.display = 'block';
+          document.getElementById('resNameAndId').innerText = `[${res.idNo || '-'}] ${res.name || ''}`;
+          
+          // 獎勵項目 (Col E)
+          const rewardBadge = document.getElementById('resRewardBadge');
+          if (res.reward) {
+            rewardBadge.innerText = "🏆 " + res.reward;
+            rewardBadge.style.display = "inline-block";
+          } else {
+            rewardBadge.style.display = "none";
+          }
+
+          // 交通費核銷否 (Col G)
+          const travelBadge = document.getElementById('resTravelBadge');
+          const isTravel = String(res.isTravelPay).trim();
+          if (isTravel === "是") {
+            travelBadge.className = "info-badge badge-travel-yes";
+            travelBadge.innerText = "🚅 交通費：可核銷 (是)";
+            travelBadge.style.display = "inline-block";
+          } else {
+            travelBadge.className = "info-badge badge-travel-no";
+            travelBadge.innerText = "🚶 交通費：無核銷 (否)";
+            travelBadge.style.display = "inline-block";
+          }
+
+          document.getElementById('resBadges').style.display = 'block';
+          setTimeout(resetUI, 4000);
+          
+        } else {
+          document.getElementById('resIcon').innerText = "❌";
+          document.getElementById('resTitle').innerText = "查無此身分證字號";
+          document.getElementById('resTitle').style.color = "#d32f2f";
+          
+          document.getElementById('resGroup').style.display = 'none';
+          document.getElementById('resNameAndId').innerText = "名單中無此資料，請工作人員再次核對！";
+          document.getElementById('resBadges').style.display = 'none';
+          setTimeout(resetUI, 4000);
+        }
+      } catch (err) {
+        document.getElementById('loading').style.display = 'none';
+        alert("連線錯誤：" + err);
+        resetUI();
+      }
+    }
+    
+    function resetUI() {
+      document.getElementById('resCard').style.display = 'none';
+      document.getElementById('inputGroup').style.display = 'block';
+      document.getElementById('resGroup').innerText = ""; 
+      document.getElementById('resNameAndId').innerText = "";   
+      input.focus();
+    }
+  </script>
+</body>
+</html>
