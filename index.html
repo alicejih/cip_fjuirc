@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <title>大會報到管理 - 原資增能獎勵報到系統</title>
   
+  <!-- 引入 HTML5 相機條碼與 QR Code 辨識引擎 (支援 Code 39 身分證條碼) -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
   <style>
     * { 
       box-sizing: border-box; 
@@ -66,19 +69,19 @@
       letter-spacing: normal;
     }
     
-    /* 簡化後的導覽列：僅報到與看板 */
+    /* 導覽列：報到與看板 */
     .nav-bar { 
       display: flex; 
       gap: 16px; 
       width: 95%; 
       max-width: 650px; 
-      margin-top: 30px; 
+      margin-top: 25px; 
       z-index: 10; 
       flex-shrink: 0;
     }
     .nav-btn { 
       flex: 1; 
-      padding: 22px 16px; 
+      padding: 18px 16px; 
       background: rgba(240, 240, 240, 0.85); 
       backdrop-filter: blur(5px);
       -webkit-backdrop-filter: blur(5px);
@@ -88,7 +91,7 @@
       text-decoration: none; 
       text-align: center; 
       font-weight: bold; 
-      font-size: 22px; 
+      font-size: 20px; 
       transition: all 0.2s ease;
       box-shadow: 0 6px 15px rgba(0,0,0,0.08);
     }
@@ -104,16 +107,16 @@
     }
 
     .card { 
-      background: rgba(255, 255, 255, 0.92); 
+      background: rgba(255, 255, 255, 0.94); 
       backdrop-filter: blur(10px);
       -webkit-backdrop-filter: blur(10px);
-      padding: 45px 35px; 
-      border-radius: 36px; 
-      box-shadow: 0 25px 50px rgba(0,0,0,0.12), 0 8px 20px rgba(0,0,0,0.06); 
+      padding: 35px 25px; 
+      border-radius: 32px; 
+      box-shadow: 0 20px 45px rgba(0,0,0,0.12), 0 6px 16px rgba(0,0,0,0.05); 
       width: 95%; 
       max-width: 620px; 
       text-align: center; 
-      margin: 35px 0 60px 0;
+      margin: 25px 0 60px 0;
       border: 1px solid rgba(0, 0, 0, 0.08); 
       overflow: hidden; 
     }
@@ -121,20 +124,116 @@
     h2 {
       color: #222222; 
       font-weight: bold;
-      font-size: 32px; 
-      margin-bottom: 20px;
+      font-size: 30px; 
+      margin-bottom: 18px;
+    }
+
+    /* 工作人員相機權限引導框 */
+    .camera-hint-box {
+      background: #fffbeb;
+      border: 2px dashed #f59e0b;
+      border-radius: 18px;
+      padding: 16px 18px;
+      text-align: center;
+      margin-bottom: 22px;
+      line-height: 1.5;
+    }
+    .hint-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: #b45309;
+      margin-bottom: 5px;
+    }
+    .hint-msg {
+      font-size: 18px;
+      font-weight: 900;
+      color: #92400e;
+      letter-spacing: 0.5px;
+      margin: 4px 0;
+    }
+    .hint-sub {
+      font-size: 13px;
+      color: #78350f;
+      margin-top: 8px;
+      border-top: 1px dashed #fde68a;
+      padding-top: 6px;
+    }
+
+    /* 相機切換按鈕 */
+    .camera-toggle-btn {
+      width: 100%;
+      padding: 20px 24px;
+      background: #1a73e8;
+      color: #ffffff;
+      border: none;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 22px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 6px 18px rgba(26, 115, 232, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin: 0 auto;
+    }
+    .camera-toggle-btn:hover {
+      background: #1557b0;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 22px rgba(26, 115, 232, 0.4);
+    }
+    .camera-toggle-btn:active {
+      transform: translateY(0);
+    }
+
+    /* 相機預覽視窗容器 */
+    #cameraWrapper {
+      position: relative;
+      margin: 18px auto 10px auto;
+      width: 100%;
+      max-width: 480px;
+      border-radius: 20px;
+      overflow: hidden;
+      border: 3px solid #cc1111;
+      background: #000;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    }
+    #reader {
+      width: 100%;
+    }
+    #reader video {
+      border-radius: 16px;
+      object-fit: cover;
+    }
+
+    /* 或手動輸入 分隔線 */
+    .divider-line {
+      position: relative;
+      text-align: center;
+      margin: 28px 0 18px 0;
+      border-bottom: 1px solid #e0e0e0;
+    }
+    .divider-line span {
+      position: relative;
+      top: 10px;
+      background: #ffffff;
+      padding: 0 16px;
+      color: #777;
+      font-size: 15px;
+      font-weight: bold;
     }
     
     input { 
       width: 100%; 
-      padding: 20px; 
-      margin: 14px 0; 
+      padding: 18px; 
+      margin: 12px 0; 
       border: 2px solid #e0e0e0; 
       border-radius: 18px; 
-      font-size: 22px; 
+      font-size: 20px; 
       text-align: center; 
       transition: all 0.2s;
-      background-color: rgba(255, 255, 255, 0.9);
+      background-color: rgba(255, 255, 255, 0.95);
       color: #222222; 
       text-transform: uppercase;
     }
@@ -145,57 +244,33 @@
       outline: none;
     }
     
-    button { 
+    .btn-submit { 
       width: 100%; 
-      padding: 28px; 
+      padding: 22px; 
       background: #cc1111; 
       color: #ffffff;      
       border: none; 
-      border-radius: 22px; 
+      border-radius: 20px; 
       font-weight: bold; 
-      font-size: 30px; 
+      font-size: 24px; 
       cursor: pointer; 
       transition: all 0.2s; 
-      box-shadow: 0 8px 20px rgba(204, 17, 17, 0.3);
-      margin-top: 20px;
+      box-shadow: 0 6px 18px rgba(204, 17, 17, 0.3);
+      margin-top: 10px;
       letter-spacing: 2px; 
     }
-    button:hover {
+    .btn-submit:hover {
       background: #b30e0e; 
-      box-shadow: 0 10px 25px rgba(204, 17, 17, 0.4);
+      box-shadow: 0 8px 22px rgba(204, 17, 17, 0.4);
       transform: translateY(-2px); 
-    }
-
-    /* 報到成功卡片資訊排版 */
-    .info-badge {
-      display: inline-block;
-      padding: 6px 16px;
-      border-radius: 30px;
-      font-size: 16px;
-      font-weight: bold;
-      margin: 6px 4px;
-    }
-    .badge-travel-yes {
-      background-color: #e6f4ea;
-      color: #137333;
-      border: 1px solid #34a853;
-    }
-    .badge-travel-no {
-      background-color: #f1f3f4;
-      color: #5f6368;
-      border: 1px solid #dadce0;
-    }
-    .badge-reward {
-      background-color: #fef7e0;
-      color: #b06000;
-      border: 1px solid #f9ab00;
     }
   </style>
 </head>
-<body onclick="focusInput();">
+<body>
 
+  <!-- API 連線設定頂部條 -->
   <div id="apiSettingBanner">
-    🔗 系統連線狀態：<span id="apiStatusText">尚未設定 GAS API 網址（目前為離線展示模式）</span>
+    🔗 系統連線狀態：<span id="apiStatusText">尚未設定 GAS API 網址（目前為展示模擬模式）</span>
     <button onclick="promptApiUrl()">[點此設定 API 網址]</button>
   </div>
 
@@ -207,14 +282,49 @@
   <div style="flex:1; display:flex; align-items:center; width:100%; justify-content:center; padding-bottom: 50px;">
     <div class="card">
       <h2 style="margin-top:0;">大會報到管理</h2>
-      <div id="inputGroup">
-        <input type="text" id="scannerInput" autofocus placeholder="請掃描或輸入身分證字號">
-        <button onclick="doScan()">確認報到</button>
+
+      <!-- 依主辦指示加入之工作人員相機權限須知 -->
+      <div class="camera-hint-box">
+        <div class="hint-title">📱 工作人員掃描須知</div>
+        <div class="hint-msg">「請大家點開這個連結，允許相機權限，就可以開始掃描參加者的身分證囉！」</div>
+        <div class="hint-sub">💡 若使用 LINE 開啟遇到相機無法啟用，請點右上方「<strong>…</strong>」選擇「<strong>以預設瀏覽器開啟</strong>」(Safari / Chrome)</div>
       </div>
-      <div id="loading" style="display:none; color:#cc1111; margin:25px; font-weight:bold; font-size: 26px;">處理中，請稍候...</div>
+
+      <!-- 掃描與輸入主操作區 -->
+      <div id="scannerSection">
+        
+        <!-- 相機啟動按鈕 -->
+        <button id="btnToggleCamera" onclick="toggleCamera()" class="camera-toggle-btn">
+          📷 開啟相機掃描身分證
+        </button>
+
+        <!-- 相機視訊視窗 -->
+        <div id="cameraWrapper" style="display: none;">
+          <div id="reader"></div>
+          <div style="font-size: 13px; color: #fff; background: rgba(0,0,0,0.6); padding: 6px; position: absolute; bottom: 0; left: 0; right: 0;">
+            請對準身分證背面條碼 (Code 39) 或 QR Code
+          </div>
+        </div>
+
+        <!-- 分隔線：保留手動輸入身分證字號 -->
+        <div class="divider-line">
+          <span>或手動輸入身分證字號</span>
+        </div>
+
+        <div id="manualInputGroup">
+          <input type="text" id="scannerInput" placeholder="請輸入身分證字號 (如 A123456789)" autocomplete="off">
+          <button class="btn-submit" onclick="doManualScan()">確認報到</button>
+        </div>
+      </div>
+
+      <!-- 處理中載入中狀態 -->
+      <div id="loading" style="display:none; color:#cc1111; margin:25px; font-weight:bold; font-size: 26px;">
+        ⏳ 處理中，請稍候...
+      </div>
       
+      <!-- 報到結果卡片 (依要求僅顯示：姓名、編號、報到成功) -->
       <div id="resCard" style="display:none; margin-top:20px; border-top:2px solid #eee; padding-top:20px;">
-        <div id="resIcon" style="font-size:60px;"></div>
+        <div id="resIcon" style="font-size:65px;"></div>
         <h2 id="resTitle" style="margin:5px 0; font-size:32px;"></h2>
         
         <!-- 顯示 姓名 (超大字醒目) -->
@@ -223,13 +333,17 @@
         <!-- 顯示 編號 (大字) -->
         <div id="resIdNo" style="font-size: 2.2rem; font-weight: 800; color: #1a73e8; margin: 10px 0; letter-spacing: 1px;"></div>
         
-        <p style="font-size:14px; color:#888; margin-top:18px;">(4秒後自動清空，可直接連續掃碼)</p>
+        <p style="font-size:14px; color:#888; margin-top:18px;">(4秒後自動恢復，可連續掃描)</p>
       </div>
+
     </div>
   </div>
   
   <script>
     let API_URL = localStorage.getItem("CIP_GAS_URL") || "";
+    let html5QrCode = null;
+    let isCameraRunning = false;
+    let isScanningLocked = false; // 防止同一身分證短時間重複觸發
 
     function promptApiUrl() {
       const input = prompt("請貼上您的 Google Apps Script Web App URL：", API_URL);
@@ -252,6 +366,123 @@
     }
     updateApiStatus();
 
+    // =========================================================================
+    // 相機掃描條碼 (Code 39 / QR Code) 模組
+    // =========================================================================
+    async function toggleCamera() {
+      const btn = document.getElementById("btnToggleCamera");
+      const wrapper = document.getElementById("cameraWrapper");
+      
+      if (isCameraRunning) {
+        await stopCamera();
+        btn.innerHTML = "📷 開啟相機掃描身分證";
+        btn.style.backgroundColor = "#1a73e8";
+        wrapper.style.display = "none";
+      } else {
+        wrapper.style.display = "block";
+        btn.innerHTML = "⏳ 正在請求相機權限...";
+        btn.disabled = true;
+        try {
+          await startCamera();
+          btn.innerHTML = "⏹️ 關閉相機";
+          btn.style.backgroundColor = "#5f6368";
+          btn.disabled = false;
+        } catch (err) {
+          btn.disabled = false;
+          btn.innerHTML = "📷 開啟相機掃描身分證";
+          btn.style.backgroundColor = "#1a73e8";
+          wrapper.style.display = "none";
+          alert("無法開啟相機：" + err + "\n\n請確認：\n1. 已允許此網頁的相機存取權限。\n2. 若使用 LINE 瀏覽器，請點選右上角『…』選擇『在預設瀏覽器中開啟』。");
+        }
+      }
+    }
+
+    async function startCamera() {
+      if (!html5QrCode) {
+        // 設定支援的身分證條碼 (Code 39)、Code 128 與 QR Code
+        const formats = [
+          Html5QrcodeSupportedFormats.CODE_39,
+          Html5QrcodeSupportedFormats.CODE_128,
+          Html5QrcodeSupportedFormats.QR_CODE
+        ];
+        html5QrCode = new Html5Qrcode("reader", { formatsToSupport: formats, verbose: false });
+      }
+
+      const config = {
+        fps: 15,
+        qrbox: { width: 280, height: 160 },
+        aspectRatio: 1.333333
+      };
+
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess,
+        onScanFailure
+      );
+      isCameraRunning = true;
+    }
+
+    async function stopCamera() {
+      if (html5QrCode && isCameraRunning) {
+        try {
+          await html5QrCode.stop();
+        } catch (e) {
+          console.warn("停止相機警告:", e);
+        }
+        isCameraRunning = false;
+      }
+    }
+
+    function onScanSuccess(decodedText, decodedResult) {
+      if (isScanningLocked) return;
+
+      const cleanId = parseNationalId(decodedText);
+      if (!cleanId) return;
+
+      isScanningLocked = true;
+      playBeep();
+      doScan(cleanId);
+    }
+
+    function onScanFailure(error) {
+      // 掃描中無條碼幀直接忽略
+    }
+
+    // 身分證字號正規化擷取
+    function parseNationalId(text) {
+      if (!text) return "";
+      let raw = text.toString().replace(/\*/g, '').trim().toUpperCase();
+      // 台灣身分證字號：1碼英文字母 + 9碼數字 (例如 A123456789)
+      const match = raw.match(/[A-Z][0-9A-Z][0-9]{8}/);
+      if (match) return match[0];
+      return raw;
+    }
+
+    // 成功提示音 (Web Audio API 合成音，免外部檔案)
+    function playBeep() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const ctx = new AudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(987.77, ctx.currentTime); // B5 note
+        gain.gain.setValueAtTime(0.2, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.18);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start();
+        osc.stop(ctx.currentTime + 0.18);
+      } catch (e) {
+        console.log("Audio not enabled");
+      }
+    }
+
+    // =========================================================================
+    // API 呼叫與報到處理
+    // =========================================================================
     async function callGasApi(action, payload = {}) {
       if (!API_URL) {
         return mockScanResponse(payload.idNumber);
@@ -264,7 +495,7 @@
       return await res.json();
     }
 
-    // 離線模擬資料
+    // 展示模擬資料
     function mockScanResponse(id) {
       return new Promise(resolve => {
         setTimeout(() => {
@@ -272,37 +503,43 @@
             resolve({
               status: "success",
               idNo: "001",
-              groupName: "第一組",
               name: "測試學員",
+              groupName: "第一組",
               reward: "語文競賽特優",
               isTravelPay: "是"
             });
           } else {
             resolve({ status: "not_found" });
           }
-        }, 500);
+        }, 400);
       });
     }
 
-    const input = document.getElementById('scannerInput');
-    input.addEventListener('keydown', e => { if (e.key === 'Enter') doScan(); });
-    
-    function focusInput() {
-      input.focus();
+    // 手動輸入 Enter 監聽
+    const manualInput = document.getElementById('scannerInput');
+    manualInput.addEventListener('keydown', e => { 
+      if (e.key === 'Enter') doManualScan(); 
+    });
+
+    function doManualScan() {
+      const id = manualInput.value.trim().toUpperCase();
+      if (!id) return;
+      doScan(id);
     }
 
-    async function doScan() {
-      const id = input.value.trim().toUpperCase(); 
-      if (!id) return;
-      document.getElementById('inputGroup').style.display = 'none';
+    async function doScan(targetId) {
+      const cleanId = parseNationalId(targetId);
+      if (!cleanId) return;
+
+      document.getElementById('scannerSection').style.display = 'none';
       document.getElementById('loading').style.display = 'block';
       
       try {
-        const res = await callGasApi("processScan", { idNumber: id });
+        const res = await callGasApi("processScan", { idNumber: cleanId });
         document.getElementById('loading').style.display = 'none';
         const card = document.getElementById('resCard'); 
         card.style.display = 'block';
-        input.value = "";
+        manualInput.value = "";
         
         if (res.status === "success" || res.status === "already") {
           if (res.status === "success") {
@@ -334,7 +571,7 @@
           const nameEl = document.getElementById('resName');
           nameEl.style.fontSize = '1.8rem';
           nameEl.style.color = '#d32f2f';
-          nameEl.innerText = "名單中無此資料，請工作人員再次核對！";
+          nameEl.innerText = "名單中無此身分證字號，請工作人員再次核對！";
           
           document.getElementById('resIdNo').innerText = "";
           setTimeout(resetUI, 4000);
@@ -348,16 +585,24 @@
     
     function resetUI() {
       document.getElementById('resCard').style.display = 'none';
-      document.getElementById('inputGroup').style.display = 'block';
+      document.getElementById('scannerSection').style.display = 'block';
+      
       const nameEl = document.getElementById('resName');
       nameEl.innerText = "";
       nameEl.style.fontSize = '3.5rem';
       nameEl.style.color = '#222222';
+      
       document.getElementById('resIdNo').innerText = ""; 
       document.getElementById('resTitle').innerText = "";
       document.getElementById('resIcon').innerText = "";
-      input.value = "";
-      input.focus();
+      
+      manualInput.value = "";
+      isScanningLocked = false;
+      
+      // 若相機未開啟，則聚焦在手動輸入框；相機運行時避免彈出虛擬鍵盤阻擋鏡頭
+      if (!isCameraRunning) {
+        manualInput.focus();
+      }
     }
   </script>
 </body>
