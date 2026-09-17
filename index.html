@@ -215,19 +215,13 @@
       
       <div id="resCard" style="display:none; margin-top:20px; border-top:2px solid #eee; padding-top:20px;">
         <div id="resIcon" style="font-size:60px;"></div>
-        <h2 id="resTitle" style="margin:5px 0;"></h2>
+        <h2 id="resTitle" style="margin:5px 0; font-size:32px;"></h2>
         
-        <!-- 顯示 組別 -->
-        <div id="resGroup" style="font-size: 3.5rem; font-weight: 900; color: #cc1111; margin: 10px 0; letter-spacing: 2px; line-height: 1.1;"></div>
+        <!-- 顯示 姓名 (超大字醒目) -->
+        <div id="resName" style="font-size: 3.5rem; font-weight: 900; color: #222222; margin: 15px 0; letter-spacing: 2px; line-height: 1.1;"></div>
         
-        <!-- 顯示 編號與姓名 -->
-        <div id="resNameAndId" style="font-size: 2.2rem; font-weight: 800; color: #1a73e8; margin: 12px 0;"></div>
-
-        <!-- 獎勵項目與交通費標籤 -->
-        <div id="resBadges" style="margin: 15px 0;">
-          <span id="resRewardBadge" class="info-badge badge-reward"></span>
-          <span id="resTravelBadge" class="info-badge"></span>
-        </div>
+        <!-- 顯示 編號 (大字) -->
+        <div id="resIdNo" style="font-size: 2.2rem; font-weight: 800; color: #1a73e8; margin: 10px 0; letter-spacing: 1px;"></div>
         
         <p style="font-size:14px; color:#888; margin-top:18px;">(4秒後自動清空，可直接連續掃碼)</p>
       </div>
@@ -321,37 +315,15 @@
             document.getElementById('resTitle').style.color = "#e65100";
           }
           
-          // 組別 (Col B)
-          document.getElementById('resGroup').style.display = 'block';
-          document.getElementById('resGroup').innerText = res.groupName ? ("組別：" + res.groupName) : "無組別";
+          // 僅顯示 姓名 與 編號 (依指示不顯示組別、獎勵項目、交通費)
+          const nameEl = document.getElementById('resName');
+          nameEl.style.fontSize = '3.5rem';
+          nameEl.style.color = '#222222';
+          nameEl.innerText = res.name || '';
           
-          // 編號 (Col A) 與 姓名 (Col D)
-          document.getElementById('resNameAndId').style.display = 'block';
-          document.getElementById('resNameAndId').innerText = `[${res.idNo || '-'}] ${res.name || ''}`;
+          const idNoEl = document.getElementById('resIdNo');
+          idNoEl.innerText = res.idNo ? ("編號：" + res.idNo) : '';
           
-          // 獎勵項目 (Col E)
-          const rewardBadge = document.getElementById('resRewardBadge');
-          if (res.reward) {
-            rewardBadge.innerText = "🏆 " + res.reward;
-            rewardBadge.style.display = "inline-block";
-          } else {
-            rewardBadge.style.display = "none";
-          }
-
-          // 交通費核銷否 (Col G)
-          const travelBadge = document.getElementById('resTravelBadge');
-          const isTravel = String(res.isTravelPay).trim();
-          if (isTravel === "是") {
-            travelBadge.className = "info-badge badge-travel-yes";
-            travelBadge.innerText = "🚅 交通費：可核銷 (是)";
-            travelBadge.style.display = "inline-block";
-          } else {
-            travelBadge.className = "info-badge badge-travel-no";
-            travelBadge.innerText = "🚶 交通費：無核銷 (否)";
-            travelBadge.style.display = "inline-block";
-          }
-
-          document.getElementById('resBadges').style.display = 'block';
           setTimeout(resetUI, 4000);
           
         } else {
@@ -359,9 +331,12 @@
           document.getElementById('resTitle').innerText = "查無此身分證字號";
           document.getElementById('resTitle').style.color = "#d32f2f";
           
-          document.getElementById('resGroup').style.display = 'none';
-          document.getElementById('resNameAndId').innerText = "名單中無此資料，請工作人員再次核對！";
-          document.getElementById('resBadges').style.display = 'none';
+          const nameEl = document.getElementById('resName');
+          nameEl.style.fontSize = '1.8rem';
+          nameEl.style.color = '#d32f2f';
+          nameEl.innerText = "名單中無此資料，請工作人員再次核對！";
+          
+          document.getElementById('resIdNo').innerText = "";
           setTimeout(resetUI, 4000);
         }
       } catch (err) {
@@ -374,8 +349,14 @@
     function resetUI() {
       document.getElementById('resCard').style.display = 'none';
       document.getElementById('inputGroup').style.display = 'block';
-      document.getElementById('resGroup').innerText = ""; 
-      document.getElementById('resNameAndId').innerText = "";   
+      const nameEl = document.getElementById('resName');
+      nameEl.innerText = "";
+      nameEl.style.fontSize = '3.5rem';
+      nameEl.style.color = '#222222';
+      document.getElementById('resIdNo').innerText = ""; 
+      document.getElementById('resTitle').innerText = "";
+      document.getElementById('resIcon').innerText = "";
+      input.value = "";
       input.focus();
     }
   </script>
