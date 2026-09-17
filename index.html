@@ -340,7 +340,8 @@
   </div>
   
   <script>
-    let API_URL = localStorage.getItem("CIP_GAS_URL") || "";
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwQnQrRL0rWlM50-KTjrx2iC8xtYTvoL9e-NL56EiDE7dU_SsgnGT-45eoY3apswwE1xA/exec";
+    let API_URL = localStorage.getItem("CIP_GAS_URL") || DEFAULT_GAS_URL;
     let html5QrCode = null;
     let isCameraRunning = false;
     let isScanningLocked = false; // 防止同一身分證短時間重複觸發
@@ -357,7 +358,7 @@
     function updateApiStatus() {
       const statusText = document.getElementById("apiStatusText");
       if (API_URL && API_URL.startsWith("http")) {
-        statusText.textContent = "已連線正式 API (" + API_URL.substring(0, 32) + "...)";
+        statusText.textContent = "已連線正式 API (Google 試算表)";
         statusText.style.color = "#a7f3d0";
       } else {
         statusText.textContent = "尚未設定 GAS API 網址（目前為展示模擬模式）";

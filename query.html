@@ -240,7 +240,8 @@
 
   <script>
     let db = [];
-    let API_URL = localStorage.getItem("CIP_GAS_URL") || "";
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbwQnQrRL0rWlM50-KTjrx2iC8xtYTvoL9e-NL56EiDE7dU_SsgnGT-45eoY3apswwE1xA/exec";
+    let API_URL = localStorage.getItem("CIP_GAS_URL") || DEFAULT_GAS_URL;
 
     window.onload = function() {
       fetchAdminData();
