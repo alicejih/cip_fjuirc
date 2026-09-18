@@ -2,7 +2,7 @@
 
 本專案為大會與研習專用之報到與統計查詢系統，前端由 GitHub Pages 託管，後端串接 Google 試算表 (Google Apps Script)。
 
-- **線上系統網址**：[https://alicejih.github.io/cip_fjuirc/](https://alicejih.github.io/cip_fjuirc/)
+- **線上系統網址**：[https://talented-fjcu.github.io/cip_fjuirc/](https://talented-fjcu.github.io/cip_fjuirc/)
 - **後端試算表**：[前往 Google 試算表](https://docs.google.com/spreadsheets/d/1rrF5RzCDhMxfEnKyyq5-DU319b4umjr34EK8Y7FQjfk/edit)
 
 ---
